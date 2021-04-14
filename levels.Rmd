@@ -1,0 +1,21 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+#library(plyr)
+#library(RJSONIO)
+#con <- file('levels.json', "r")
+#df  <- ldply(fromJSON(con), data.frame)
+#close(con)
+#df
+#write.csv(df,"./levels.csv")
+```
+
+```{r}
+df <- read.csv("./levels.csv")
+drop <- c("X")
+df = df[,!(names(df) %in% drop)]
+head(df)
+```
