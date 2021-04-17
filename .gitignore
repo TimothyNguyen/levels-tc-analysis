@@ -2,5 +2,5 @@
 .Rhistory
 .RData
 .Ruserdata
-levels.csv
-levels.json
+*.csv
+*.json
