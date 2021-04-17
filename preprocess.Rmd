@@ -1,0 +1,157 @@
+---
+title: "preprocess"
+output: html_notebook
+---
+
+```{r}
+#library(plyr)
+#library(RJSONIO)
+#con <- file('levels.json', "r")
+#df  <- ldply(fromJSON(con), data.frame)
+#close(con)
+#df
+#write.csv(df,"./levels.csv")
+library(tidyr)
+library(tidyverse)
+library(countrycode)
+library(ggmap)
+library(magrittr) # needs to be run every time you start R and want to use %>%
+library(dplyr)    # alternatively, this also loads %>%
+```
+
+```{r}
+df <- read.csv("./levels.csv")
+drop <- c("X")
+df = df[,!(names(df) %in% drop)]
+head(df)
+```
+
+```{r}
+'
+for(i in 1:length(df$location)) {
+    if(!is.na(df$basesalary[i])) {
+      num_digits = floor(log10(df$basesalary[i])) + 1
+      #print(df$basesalary[i])
+      #print("hi")
+      #print(num_digits)
+      if(num_digits <= 3) {
+        df$basesalary[i] <- df$basesalary[i]*1000
+      }
+    }
+    if(!is.na(df$stockgrantvalue[i])) {
+      num_digits = 1 + floor(log10(df$stockgrantvalue[i]))
+      #print(num_digits)
+      if(num_digits <= 3) {
+        df$stockgrantvalue[i] <- df$stockgrantvalue[i]*1000
+      }
+    }
+    if(!is.na(df$bonus[i])) {
+      num_digits = floor(log10(df$bonus[i])) + 1
+      
+      #print(num_digits)
+      if(num_digits <= 3) {
+        df$bonus[i] <- df$bonus[i]*1000
+      }
+    }
+}
+'
+```
+
+```{r}
+new_df <- data.frame(matrix(ncol = length(colnames(df)), nrow = 0))
+colnames(new_df) <- colnames(df)
+for(i in 1:length(df$location)) {
+  if(length(unlist(strsplit(df$location[i], ","))) <= 2) {
+    
+    if(!is.na(df$basesalary[i])) {
+      num_digits = floor(log10(df$basesalary[i])) + 1
+      #print(df$basesalary[i])
+      #print("hi")
+      #print(num_digits)
+      if(num_digits <= 3) {
+        df$basesalary[i] <- df$basesalary[i]*1000
+      }
+    }
+    if(!is.na(df$stockgrantvalue[i])) {
+      num_digits = 1 + floor(log10(df$stockgrantvalue[i]))
+      #print(num_digits)
+      if(num_digits <= 3) {
+        df$stockgrantvalue[i] <- df$stockgrantvalue[i]*1000
+      }
+    }
+    if(!is.na(df$bonus[i])) {
+      num_digits = floor(log10(df$bonus[i])) + 1
+      
+      #print(num_digits)
+      if(num_digits <= 3) {
+        df$bonus[i] <- df$bonus[i]*1000
+      }
+    }
+    #print(df[i,])
+    new_df <- rbind(new_df, df[i,])
+  }
+}
+```
+
+```{r}
+new_df
+```
+
+```{r}
+new_df2 <- new_df
+#new_df2 <- separate(new_df2, location, c("city", "state") , ",")
+```
+
+```{r}
+new_df2
+```
+
+```{r}
+#library(plyr)
+#library(RJSONIO)
+#con <- file('us-zip-code-latitude-and-longitude.json', "r")
+#df_us  <- ldply(fromJSON(con), data.frame)
+#close(con)
+#df
+#write.csv(df_us,"./us-code-lat-long.csv")
+```
+
+```{r}
+df_us <- read.csv("./us-code-lat-long.csv")
+#df_us$location <- gsub(" ", "", paste(df_us$fields.city, ", ", df_us$fields.state))
+df_us$location <- paste(df_us$fields.city, df_us$fields.state, sep=", ")
+df_us <- df_us %>% select(location, fields.city, fields.state, fields.zip, fields.latitude, fields.longitude )
+#df_us <- unique(df_us[c("fields.city", "fields.state")])
+df_us <- df_us %>% distinct(location, .keep_all = TRUE) 
+#df_us
+names(df_us)[names(df_us) == "fields.city"] <- "city"
+names(df_us)[names(df_us) == "fields.state"] <- "state"
+names(df_us)[names(df_us) == "fields.zip"] <- "zip"
+names(df_us)[names(df_us) == "fields.latitude"] <- "lat"
+names(df_us)[names(df_us) == "fields.longitude"] <- "long"
+df_us
+```
+
+```{r}
+cleaned_df <- left_join(
+          new_df2,
+          df_us,
+          by=c("location"))
+cleaned_df$totalyearlycompensation = cleaned_df$totalyearlycompensation * 1000
+cleaned_df$month = format(as.POSIXct(cleaned_df$timestamp, 
+                                    format = "%m/%d/%Y %H:%M:%S"), 
+                                    format = "%m")
+cleaned_df$year = format(as.POSIXct(cleaned_df$timestamp, 
+                                    format = "%m/%d/%Y %H:%M:%S"), 
+                                    format = "%Y")
+drop <- c("otherdetails","cityid", "dmaid", "rowNumber")
+cleaned_df <- cleaned_df[,!(names(cleaned_df) %in% drop)]
+```
+
+```{r}
+cleaned_df
+```
+
+```{r}
+write.csv(cleaned_df,"./levels-cleaned.csv")
+```

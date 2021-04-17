@@ -1,0 +1,67 @@
+---
+title: "Levels TC Analysis"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+library(ggplot2)  
+library(plotly)
+```
+
+```{r}
+levels_df <- read.csv("./levels-cleaned.csv")
+drop <- c("X", "timestamp")
+levels_df <- levels_df[,!(names(levels_df) %in% drop)]
+levels_df
+```
+
+```{r}
+Sys.setenv("MAPBOX_TOKEN" = "pk.eyJ1IjoidGltb3RoeW5ndXllIiwiYSI6ImNrbW8wZmR0OTF6cnoycHQ0ZXFydTBwY3oifQ.LumCjldRn9X9jX70p1BA-w")
+```
+
+Let's take a look at highest total compensation by entry level candidates
+
+```{r}
+new_entry <- levels_df %>%
+  filter(yearsofexperience <= 1.5)
+```
+
+```{r}
+new_entry_tc <- new_entry %>%
+  group_by(city, state)
+new_entry_tc
+new_entry_tc <- aggregate(new_entry_tc$totalyearlycompensation, 
+                          by=list(location=new_entry_tc$location,
+                                  zip=new_entry_tc$zip, 
+                                  lat=new_entry_tc$lat, 
+                                  long=new_entry_tc$long,
+                                  #year=new_entry_tc$year,
+                                  state=new_entry_tc$state), 
+                          FUN=mean, na.action = na.omit)
+names(new_entry_tc)[names(new_entry_tc) == "x"] <- "tc"
+new_entry_tc 
+```
+
+```{r}
+fig <- new_entry_tc
+fig <- fig %>%
+  plot_mapbox() %>%
+  add_markers(x = ~long,
+              y = ~lat,
+              color = ~state,
+              size = ~tc*100,
+              text = ~paste0(location, "<br>",
+                 "<b>Total Yearly Compensation:</b> $", tc)) %>%
+  layout(
+    mapbox = list(
+      style = 'open-street-map',
+      center = list(lon = -97, lat = 38),
+      zoom = 2.5)) 
+
+fig
+```
+
+```{r}
+
+```
