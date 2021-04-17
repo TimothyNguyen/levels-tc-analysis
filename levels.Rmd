@@ -11,6 +11,12 @@ output: html_notebook
 #close(con)
 #df
 #write.csv(df,"./levels.csv")
+library(tidyr)
+library(tidyverse)
+library(countrycode)
+library(ggmap)
+library(magrittr) # needs to be run every time you start R and want to use %>%
+library(dplyr)    # alternatively, this also loads %>%
 ```
 
 ```{r}
@@ -19,3 +25,68 @@ drop <- c("X")
 df = df[,!(names(df) %in% drop)]
 head(df)
 ```
+
+```{r}
+df$location[2]
+```
+
+```{r}
+new_df <- data.frame(matrix(ncol = length(colnames(df)), nrow = 0))
+colnames(new_df) <- colnames(df)
+for(i in 1:length(df$location)) {
+  if(length(unlist(strsplit(df$location[i], ","))) <= 2) {
+    new_df <- rbind(new_df, df[i,])
+  }
+}
+```
+
+```{r}
+new_df
+```
+
+```{r}
+new_df2 <- new_df
+new_df2 <- separate(new_df2, location, c("city", "state") , ",")
+```
+
+```{r}
+new_df2
+```
+
+```{r}
+#library(plyr)
+#library(RJSONIO)
+#con <- file('us-zip-code-latitude-and-longitude.json', "r")
+#df_us  <- ldply(fromJSON(con), data.frame)
+#close(con)
+#df
+#write.csv(df_us,"./us-code-lat-long.csv")
+```
+
+```{r}
+df_us <- read.csv("./us-code-lat-long.csv")
+df_us <- df_us %>% select(fields.city, fields.state, fields.zip, fields.latitude, fields.longitude )
+df_us <- unique(df_us[c("fields.city", "fields.state")])
+names(df_us)[names(df_us) == "fields.city"] <- "city"
+names(df_us)[names(df_us) == "fields.state"] <- "state"
+names(df_us)[names(df_us) == "fields.zip"] <- "zip"
+names(df_us)[names(df_us) == "fields.latitude"] <- "lat"
+names(df_us)[names(df_us) == "fields.longitude"] <- "long"
+#df_us
+```
+
+```{r}
+cleaned_df <- left_join(new_df2,
+          df_us,
+          by = c("city", "state"))
+```
+
+```{r}
+cleaned_df
+```
+
+```{r}
+write.csv(cleaned_df,"./levels-cleaned.csv")
+```
+
+,
