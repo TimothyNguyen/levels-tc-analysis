@@ -27,37 +27,6 @@ head(df)
 ```
 
 ```{r}
-'
-for(i in 1:length(df$location)) {
-    if(!is.na(df$basesalary[i])) {
-      num_digits = floor(log10(df$basesalary[i])) + 1
-      #print(df$basesalary[i])
-      #print("hi")
-      #print(num_digits)
-      if(num_digits <= 3) {
-        df$basesalary[i] <- df$basesalary[i]*1000
-      }
-    }
-    if(!is.na(df$stockgrantvalue[i])) {
-      num_digits = 1 + floor(log10(df$stockgrantvalue[i]))
-      #print(num_digits)
-      if(num_digits <= 3) {
-        df$stockgrantvalue[i] <- df$stockgrantvalue[i]*1000
-      }
-    }
-    if(!is.na(df$bonus[i])) {
-      num_digits = floor(log10(df$bonus[i])) + 1
-      
-      #print(num_digits)
-      if(num_digits <= 3) {
-        df$bonus[i] <- df$bonus[i]*1000
-      }
-    }
-}
-'
-```
-
-```{r}
 new_df <- data.frame(matrix(ncol = length(colnames(df)), nrow = 0))
 colnames(new_df) <- colnames(df)
 for(i in 1:length(df$location)) {
