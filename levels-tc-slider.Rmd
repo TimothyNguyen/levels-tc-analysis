@@ -1,0 +1,327 @@
+---
+title: "R Notebook"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r}
+library(tidyverse)
+library(plotly)
+```
+
+```{r}
+levels_df <- read_csv("levels-cleaned.csv")
+```
+
+```{r}
+companyCompensation <- 
+  levels_df %>%
+  group_by(year, company) %>%
+  summarise(yearly_compensation = mean(totalyearlycompensation))
+
+cityCompensation <- 
+  levels_df %>%
+  group_by(year, location) %>%
+  summarise(yearly_compensation = mean(totalyearlycompensation))
+```
+
+Yearly mean compensation for top 5 companies in 2017, 2018, 2019, 2020, 2021
+```{r}
+companyCompensation2017 <- 
+  companyCompensation %>%
+  filter(year == 2017) %>%
+  arrange(desc(yearly_compensation)) %>%
+  head(n = 5) %>%
+  plot_ly(
+    x = ~yearly_compensation,
+    y = ~company,
+    type = "bar",
+    text = ~paste(company, ": $", round(yearly_compensation), sep = ""),
+    hoverinfo = "text"
+  ) %>%
+  layout(showlegend = FALSE)
+
+companyCompensation2018 <- 
+  companyCompensation %>%
+  filter(year == 2018) %>%
+  arrange(desc(yearly_compensation)) %>%
+  head(n = 5) %>%
+  plot_ly(
+    x = ~yearly_compensation,
+    y = ~company,
+    type = "bar",
+    text = ~paste(company, ": $", round(yearly_compensation), sep = ""),
+    hoverinfo = "text"
+  ) %>%
+  layout(showlegend = FALSE)
+
+companyCompensation2019 <- 
+  companyCompensation %>%
+  filter(year == 2019) %>%
+  arrange(desc(yearly_compensation)) %>%
+  head(n = 5) %>%
+  plot_ly(
+    x = ~yearly_compensation,
+    y = ~company,
+    type = "bar",
+    text = ~paste(company, ": $", round(yearly_compensation), sep = ""),
+    hoverinfo = "text"
+  ) %>%
+  layout(showlegend = FALSE)
+
+companyCompensation2020 <- 
+  companyCompensation %>%
+  filter(year == 2020) %>%
+  arrange(desc(yearly_compensation)) %>%
+  head(n = 5) %>%
+  plot_ly(
+    x = ~yearly_compensation,
+    y = ~company,
+    type = "bar",
+    text = ~paste(company, ": $", round(yearly_compensation), sep = ""),
+    hoverinfo = "text"
+  ) %>%
+  layout(showlegend = FALSE)
+
+companyCompensation2021 <- 
+  companyCompensation %>%
+  filter(year == 2021) %>%
+  arrange(desc(yearly_compensation)) %>%
+  head(n = 5) %>%
+  plot_ly(
+    x = ~yearly_compensation,
+    y = ~company,
+    type = "bar",
+    text = ~paste(company, ": $", round(yearly_compensation), sep = ""),
+    hoverinfo = "text"
+  ) %>%
+  layout(showlegend = FALSE)
+
+subplot(companyCompensation2017, companyCompensation2018, companyCompensation2019, companyCompensation2020, companyCompensation2021, nrows = 5)
+```
+
+Yearly mean compensation for top 5 cities in 2017, 2018, 2019, 2020, 2021
+```{r}
+cityCompensation2017 <- 
+  cityCompensation %>%
+  filter(year == 2017) %>%
+  arrange(desc(yearly_compensation)) %>%
+  head(n = 5) %>%
+  plot_ly(
+    x = ~yearly_compensation,
+    y = ~location,
+    type = "bar",
+    text = ~paste(location, ": $", round(yearly_compensation), sep = ""),
+    hoverinfo = "text"
+  ) %>%
+  layout(showlegend = FALSE)
+
+cityCompensation2018 <- 
+  cityCompensation %>%
+  filter(year == 2018) %>%
+  arrange(desc(yearly_compensation)) %>%
+  head(n = 5) %>%
+  plot_ly(
+    x = ~yearly_compensation,
+    y = ~location,
+    type = "bar",
+    text = ~paste(location, ": $", round(yearly_compensation), sep = ""),
+    hoverinfo = "text"
+  ) %>%
+  layout(showlegend = FALSE)
+
+cityCompensation2019 <- 
+  cityCompensation %>%
+  filter(year == 2019) %>%
+  arrange(desc(yearly_compensation)) %>%
+  head(n = 5) %>%
+  plot_ly(
+    x = ~yearly_compensation,
+    y = ~location,
+    type = "bar",
+    text = ~paste(location, ": $", round(yearly_compensation), sep = ""),
+    hoverinfo = "text"
+  ) %>%
+  layout(showlegend = FALSE)
+
+cityCompensation2020 <- 
+  cityCompensation %>%
+  filter(year == 2020) %>%
+  arrange(desc(yearly_compensation)) %>%
+  head(n = 5) %>%
+  plot_ly(
+    x = ~yearly_compensation,
+    y = ~location,
+    type = "bar",
+    text = ~paste(location, ": $", round(yearly_compensation), sep = ""),
+    hoverinfo = "text"
+  ) %>%
+  layout(showlegend = FALSE)
+
+cityCompensation2021 <- 
+  cityCompensation %>%
+  filter(year == 2021) %>%
+  arrange(desc(yearly_compensation)) %>%
+  head(n = 5) %>%
+  plot_ly(
+    x = ~yearly_compensation,
+    y = ~location,
+    type = "bar",
+    text = ~paste(location, ": $", round(yearly_compensation), sep = ""),
+    hoverinfo = "text"
+  ) %>%
+  layout(showlegend = FALSE)
+
+subplot(cityCompensation2017, cityCompensation2018, cityCompensation2019, cityCompensation2020, cityCompensation2021, nrows = 5)
+```
+
+Yearly mean compensation for last 5 companies in 2017, 2018, 2019, 2020, 2021
+```{r}
+companyCompensation2017 <- 
+  companyCompensation %>%
+  filter(year == 2017) %>%
+  arrange(yearly_compensation) %>%
+  head(n = 5) %>%
+  plot_ly(
+    x = ~yearly_compensation,
+    y = ~company,
+    type = "bar",
+    text = ~paste(company, ": $", round(yearly_compensation), sep = ""),
+    hoverinfo = "text"
+  ) %>%
+  layout(showlegend = FALSE)
+
+companyCompensation2018 <- 
+  companyCompensation %>%
+  filter(year == 2018) %>%
+  arrange(yearly_compensation) %>%
+  head(n = 5) %>%
+  plot_ly(
+    x = ~yearly_compensation,
+    y = ~company,
+    type = "bar",
+    text = ~paste(company, ": $", round(yearly_compensation), sep = ""),
+    hoverinfo = "text"
+  ) %>%
+  layout(showlegend = FALSE)
+
+companyCompensation2019 <- 
+  companyCompensation %>%
+  filter(year == 2019) %>%
+  arrange(yearly_compensation) %>%
+  head(n = 5) %>%
+  plot_ly(
+    x = ~yearly_compensation,
+    y = ~company,
+    type = "bar",
+    text = ~paste(company, ": $", round(yearly_compensation), sep = ""),
+    hoverinfo = "text"
+  ) %>%
+  layout(showlegend = FALSE)
+
+companyCompensation2020 <- 
+  companyCompensation %>%
+  filter(year == 2020) %>%
+  arrange(yearly_compensation) %>%
+  head(n = 5) %>%
+  plot_ly(
+    x = ~yearly_compensation,
+    y = ~company,
+    type = "bar",
+    text = ~paste(company, ": $", round(yearly_compensation), sep = ""),
+    hoverinfo = "text"
+  ) %>%
+  layout(showlegend = FALSE)
+
+companyCompensation2021 <- 
+  companyCompensation %>%
+  filter(year == 2021) %>%
+  arrange(yearly_compensation) %>%
+  head(n = 5) %>%
+  plot_ly(
+    x = ~yearly_compensation,
+    y = ~company,
+    type = "bar",
+    text = ~paste(company, ": $", round(yearly_compensation), sep = ""),
+    hoverinfo = "text"
+  ) %>%
+  layout(showlegend = FALSE)
+
+subplot(companyCompensation2017, companyCompensation2018, companyCompensation2019, companyCompensation2020, companyCompensation2021, nrows = 5)
+```
+
+Yearly mean compensation for last 5 cities in 2017, 2018, 2019, 2020, 2021
+```{r}
+cityCompensation2017 <- 
+  cityCompensation %>%
+  filter(year == 2017) %>%
+  arrange(yearly_compensation) %>%
+  head(n = 5) %>%
+  plot_ly(
+    x = ~yearly_compensation,
+    y = ~location,
+    type = "bar",
+    text = ~paste(location, ": $", round(yearly_compensation), sep = ""),
+    hoverinfo = "text"
+  ) %>%
+  layout(showlegend = FALSE)
+
+cityCompensation2018 <- 
+  cityCompensation %>%
+  filter(year == 2018) %>%
+  arrange(yearly_compensation) %>%
+  head(n = 5) %>%
+  plot_ly(
+    x = ~yearly_compensation,
+    y = ~location,
+    type = "bar",
+    text = ~paste(location, ": $", round(yearly_compensation), sep = ""),
+    hoverinfo = "text"
+  ) %>%
+  layout(showlegend = FALSE)
+
+cityCompensation2019 <- 
+  cityCompensation %>%
+  filter(year == 2019) %>%
+  arrange(yearly_compensation) %>%
+  head(n = 5) %>%
+  plot_ly(
+    x = ~yearly_compensation,
+    y = ~location,
+    type = "bar",
+    text = ~paste(location, ": $", round(yearly_compensation), sep = ""),
+    hoverinfo = "text"
+  ) %>%
+  layout(showlegend = FALSE)
+
+cityCompensation2020 <- 
+  cityCompensation %>%
+  filter(year == 2020) %>%
+  arrange(yearly_compensation) %>%
+  head(n = 5) %>%
+  plot_ly(
+    x = ~yearly_compensation,
+    y = ~location,
+    type = "bar",
+    text = ~paste(location, ": $", round(yearly_compensation), sep = ""),
+    hoverinfo = "text"
+  ) %>%
+  layout(showlegend = FALSE)
+
+cityCompensation2021 <- 
+  cityCompensation %>%
+  filter(year == 2021) %>%
+  arrange(yearly_compensation) %>%
+  head(n = 5) %>%
+  plot_ly(
+    x = ~yearly_compensation,
+    y = ~location,
+    type = "bar",
+    text = ~paste(location, ": $", round(yearly_compensation), sep = ""),
+    hoverinfo = "text"
+  ) %>%
+  layout(showlegend = FALSE)
+
+subplot(cityCompensation2017, cityCompensation2018, cityCompensation2019, cityCompensation2020, cityCompensation2021, nrows = 5)
+```
