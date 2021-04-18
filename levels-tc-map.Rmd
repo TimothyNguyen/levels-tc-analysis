@@ -7,6 +7,10 @@ output: html_notebook
 library(tidyverse)
 library(ggplot2)  
 library(plotly)
+library(kableExtra)
+library(shiny)
+library(tidyr)
+library(dplyr)
 ```
 
 ```{r}
@@ -17,30 +21,64 @@ levels_df
 ```
 
 ```{r}
+pres <- levels_df %>%
+  select(company, totalyearlycompensation, 
+         title, yearsofexperience, location, gender, lat, long, year)
+  
+head(pres) %>%
+  kbl() %>%
+  kable_styling() %>% 
+  save_kable("combined_tables.png")
+```
+
+```{r}
 Sys.setenv("MAPBOX_TOKEN" = "pk.eyJ1IjoidGltb3RoeW5ndXllIiwiYSI6ImNrbW8wZmR0OTF6cnoycHQ0ZXFydTBwY3oifQ.LumCjldRn9X9jX70p1BA-w")
 ```
 
 Let's take a look at highest total compensation by entry level candidates
 
 ```{r}
-new_entry <- levels_df %>%
-  filter(yearsofexperience <= 1.5)
+new_entry <- levels_df %>% filter(yearsofexperience <= 1.5)
+new_entry
 ```
 
 ```{r}
-new_entry_tc <- new_entry %>%
-  group_by(city, state)
-new_entry_tc
-new_entry_tc <- aggregate(new_entry_tc$totalyearlycompensation, 
-                          by=list(location=new_entry_tc$location,
-                                  zip=new_entry_tc$zip, 
-                                  lat=new_entry_tc$lat, 
-                                  long=new_entry_tc$long,
-                                  #year=new_entry_tc$year,
-                                  state=new_entry_tc$state), 
+new_entry <- new_entry %>% 
+                drop_na(basesalary)  %>%
+                drop_na(title) %>%
+                drop_na(stockgrantvalue) %>%
+                drop_na(bonus)
+'
+new_entry_tc <- aggregate(new_entry$totalyearlycompensation, 
+                          by=list(location=new_entry$location), 
                           FUN=mean, na.action = na.omit)
 names(new_entry_tc)[names(new_entry_tc) == "x"] <- "tc"
-new_entry_tc 
+new_entry_tc
+'
+new_entry_tc <- aggregate(list(new_entry$totalyearlycompensation,
+                               new_entry$basesalary,
+                               new_entry$stockgrantvalue,
+                               new_entry$bonus), 
+                          by=list(location=new_entry$location), 
+                          FUN=mean, na.action = na.omit)
+names(new_entry_tc)[2] <- "tc"
+names(new_entry_tc)[3] <- "basesalary"
+names(new_entry_tc)[4] <- "stockgrantvalue"
+names(new_entry_tc)[5] <- "bonus"
+new_entry_tc
+```
+
+```{r}
+location_df <- new_entry %>% 
+  distinct(location, .keep_all = TRUE) %>%
+  select(location, zip, lat, long, city, state)
+location_df
+```
+
+```{r}
+new_entry_tc <- new_entry_tc %>%
+  left_join(location_df)
+new_entry_tc
 ```
 
 ```{r}
@@ -52,7 +90,10 @@ fig <- fig %>%
               color = ~state,
               size = ~tc*100,
               text = ~paste0(location, "<br>",
-                 "<b>Total Yearly Compensation:</b> $", tc)) %>%
+                 "<b>Mean Yearly Compensation:</b> $", tc, "<br>",
+                 "<b>Mean Salary Base:</b> $", basesalary, "<br>",
+                 "<b>Mean stocks grants:</b> $", stockgrantvalue, "<br>",
+                 "<b>Mean bonus:</b> $", bonus, "<br>")) %>%
   layout(
     mapbox = list(
       style = 'open-street-map',
@@ -63,5 +104,134 @@ fig
 ```
 
 ```{r}
+ levels_df %>% 
+        filter(yearsofexperience >= 1.5)
+```
 
+```{r}
+ui <-
+  fluidPage(
+    # App title
+    titlePanel("Years of Experience, Location & Total Compensation"),
+    
+    # sidebar layout with input and output definitions
+    sidebarLayout(
+      # Sidebar panel for inputs
+      sidebarPanel(
+        sliderInput("yoe",
+                    "Years of experience",
+                    min = min(levels_df$yearsofexperience),
+                    max = max(levels_df$yearsofexperience),
+                    value = c(min(levels_df$yearsofexperience), 
+                              max(levels_df$yearsofexperience)),
+                    step = 1,
+                    sep = "")
+      ),
+      
+      # Main panel for displaying outputs
+      mainPanel(
+        plotlyOutput(outputId = "tc_loc")
+      )
+    ))
+server <- function(input, output) {
+  output$tc_loc <-
+    renderPlotly({
+      prep <- levels_df %>% 
+        filter(yearsofexperience >= input$yoe[1] & 
+              yearsofexperience <= input$yoe[2]) 
+        
+        
+      tc <- aggregate(prep$totalyearlycompensation, 
+                          by=list(location=prep$location), 
+                          FUN=mean, na.action = na.omit)
+      names(tc)[names(tc) == "x"] <- "tc"
+    
+      location_df <- prep %>% 
+        distinct(location, .keep_all = TRUE) %>%
+        select(location, zip, lat, long, city, state)
+      
+      tc <- tc %>% left_join(location_df)
+      
+      fig <- tc
+      fig %>%
+        plot_mapbox() %>%
+        add_markers(x = ~long,
+                    y = ~lat,
+                    color = ~state,
+                    size = ~tc*100,
+                    text = ~paste0(location, "<br>",
+                       "<b>Total Yearly Compensation:</b> $", tc)) %>%
+        layout(
+          mapbox = list(
+            style = 'open-street-map',
+            center = list(lon = -97, lat = 38),
+            zoom = 2.5)) 
+          })
+}
+
+shinyApp(ui, server)
+```
+
+Looking at different roles in companies based on role
+
+```{r}
+con <- factor(unique(levels_df[c("title")])$title)
+con
+```
+
+-   First group by location + company
+
+-   Then split by yoe
+
+-   If there's at least a male & female per location + company, include in data. Else exclude
+
+    Let's begin with an example to see
+
+```{r}
+new_entry <- new_entry %>% 
+                drop_na(basesalary)  %>%
+                drop_na(title) %>%
+                drop_na(stockgrantvalue) %>%
+                drop_na(bonus)
+
+new_entry_tc <- aggregate(list(tc = new_entry$totalyearlycompensation,
+                               basesalary = new_entry$basesalary,
+                               stockgrantvalue = new_entry$stockgrantvalue,
+                               bonus = new_entry$bonus), 
+                          by=list( title=new_entry$title, state=new_entry$state), 
+                          FUN=mean, na.action = na.omit)
+#names(new_entry_tc)[2] <- "state"
+#names(new_entry_tc)[3] <- "tc"
+#names(new_entry_tc)[4] <- "basesalary"
+#names(new_entry_tc)[5] <- "stockgrantvalue"
+#names(new_entry_tc)[6] <- "bonus"
+
+new_entry_tc
+```
+
+```{r}
+location_df <- new_entry %>% 
+  distinct(state, .keep_all = TRUE) %>%
+  select(state, lat, long) %>% na.omit()
+# location_df <- na.omit(location_df)
+location_df
+```
+
+```{r}
+new_entry_tc <- new_entry_tc %>%
+  left_join(location_df)
+new_entry_tc
+```
+
+```{r}
+new_entry_tc %>% 
+  filter(state == "AR") %>%
+  ggplot(aes(x = title, y = tc, fill = title)) +
+  geom_text(aes(y = tc, label = tc, hjust=0), 
+                  size = 3) +
+        geom_bar(stat = "identity")+
+        coord_flip()+
+        labs(x = "", y = "")+
+        ggtitle(paste("Hello"))+
+        theme(legend.title = element_blank(), legend.position = "none")
 ```
