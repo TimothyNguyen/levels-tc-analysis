@@ -11,17 +11,17 @@ library(plotly)
 ```
 
 ```{r}
-levels_df <- read_csv("levels-cleaned.csv")
+l_df <- read_csv("levels-cleaned.csv")
 ```
 
 ```{r}
 companyCompensation <- 
-  levels_df %>%
+  l_df %>%
   group_by(year, company) %>%
   summarise(yearly_compensation = mean(totalyearlycompensation))
 
 cityCompensation <- 
-  levels_df %>%
+  l_df %>%
   group_by(year, location) %>%
   summarise(yearly_compensation = mean(totalyearlycompensation))
 ```
@@ -329,9 +329,9 @@ subplot(cityCompensation2017, cityCompensation2018, cityCompensation2019, cityCo
 Making YOE Levels
 ```{r}
 YOE_Levels <- 
-  levels_df %>%
-  mutate(YOE = case_when(between(yearsofexperience, 0, 1) ~ "0-1",
-                         between(yearsofexperience, 1, 5) ~ "1-5",
+  l_df %>%
+  mutate(YOE = case_when(between(yearsofexperience, 0, 2) ~ "0-2",
+                         between(yearsofexperience, 2, 5) ~ "2-5",
                          between(yearsofexperience, 5, 10) ~ "5-10",
                          yearsofexperience >= 10 ~ "10+"))
 
@@ -345,7 +345,7 @@ cityCompensationYOE <-
 ```{r}
 cityCompensation2018_01 <- 
   cityCompensationYOE %>%
-  filter(YOE == "0-1") %>%
+  filter(YOE == "0-2") %>%
   filter(year == 2018) %>%
   arrange(desc(yearly_compensation)) %>%
   head(n = 5) %>%
@@ -360,7 +360,7 @@ cityCompensation2018_01 <-
 
 cityCompensation2018_15 <- 
   cityCompensationYOE %>%
-  filter(YOE == "1-5") %>%
+  filter(YOE == "2-5") %>%
   filter(year == 2018) %>%
   arrange(desc(yearly_compensation)) %>%
   head(n = 5) %>%
@@ -410,7 +410,7 @@ subplot(cityCompensation2018_01, cityCompensation2018_15, cityCompensation2018_5
 ```{r}
 cityCompensation2021_01 <- 
   cityCompensationYOE %>%
-  filter(YOE == "0-1") %>%
+  filter(YOE == "0-2") %>%
   filter(year == 2021) %>%
   arrange(desc(yearly_compensation)) %>%
   head(n = 5) %>%
@@ -425,7 +425,7 @@ cityCompensation2021_01 <-
 
 cityCompensation2021_15 <- 
   cityCompensationYOE %>%
-  filter(YOE == "1-5") %>%
+  filter(YOE == "2-5") %>%
   filter(year == 2021) %>%
   arrange(desc(yearly_compensation)) %>%
   head(n = 5) %>%
@@ -458,6 +458,136 @@ cityCompensation2021_10_ <-
   filter(YOE == "10+") %>%
   filter(year == 2021) %>%
   arrange(desc(yearly_compensation)) %>%
+  head(n = 5) %>%
+  plot_ly(
+    x = ~yearly_compensation,
+    y = ~location,
+    type = "bar",
+    text = ~paste(location, ": $", round(yearly_compensation), sep = ""),
+    hoverinfo = "text"
+  ) %>%
+  layout(showlegend = FALSE)
+
+subplot(cityCompensation2021_01, cityCompensation2021_15, cityCompensation2021_510, cityCompensation2021_10_, nrows = 4)
+```
+
+2018 last 5 locations with experience plots
+```{r}
+cityCompensation2018_01 <- 
+  cityCompensationYOE %>%
+  filter(YOE == "0-2") %>%
+  filter(year == 2018) %>%
+  arrange(yearly_compensation) %>%
+  head(n = 5) %>%
+  plot_ly(
+    x = ~yearly_compensation,
+    y = ~location,
+    type = "bar",
+    text = ~paste(location, ": $", round(yearly_compensation), sep = ""),
+    hoverinfo = "text"
+  ) %>%
+  layout(showlegend = FALSE)
+
+cityCompensation2018_15 <- 
+  cityCompensationYOE %>%
+  filter(YOE == "2-5") %>%
+  filter(year == 2018) %>%
+  arrange(yearly_compensation) %>%
+  head(n = 5) %>%
+  plot_ly(
+    x = ~yearly_compensation,
+    y = ~location,
+    type = "bar",
+    text = ~paste(location, ": $", round(yearly_compensation), sep = ""),
+    hoverinfo = "text"
+  ) %>%
+  layout(showlegend = FALSE)
+
+cityCompensation2018_510 <- 
+  cityCompensationYOE %>%
+  filter(YOE == "5-10") %>%
+  filter(year == 2018) %>%
+  arrange(yearly_compensation) %>%
+  head(n = 5) %>%
+  plot_ly(
+    x = ~yearly_compensation,
+    y = ~location,
+    type = "bar",
+    text = ~paste(location, ": $", round(yearly_compensation), sep = ""),
+    hoverinfo = "text"
+  ) %>%
+  layout(showlegend = FALSE)
+
+cityCompensation2018_10_ <- 
+  cityCompensationYOE %>%
+  filter(YOE == "10+") %>%
+  filter(year == 2018) %>%
+  arrange(yearly_compensation) %>%
+  head(n = 5) %>%
+  plot_ly(
+    x = ~yearly_compensation,
+    y = ~location,
+    type = "bar",
+    text = ~paste(location, ": $", round(yearly_compensation), sep = ""),
+    hoverinfo = "text"
+  ) %>%
+  layout(showlegend = FALSE)
+
+subplot(cityCompensation2018_01, cityCompensation2018_15, cityCompensation2018_510, cityCompensation2018_10_, nrows = 4)
+```
+
+2021 last 5 locations with experience plots
+```{r}
+cityCompensation2021_01 <- 
+  cityCompensationYOE %>%
+  filter(YOE == "0-2") %>%
+  filter(year == 2021) %>%
+  arrange(yearly_compensation) %>%
+  head(n = 5) %>%
+  plot_ly(
+    x = ~yearly_compensation,
+    y = ~location,
+    type = "bar",
+    text = ~paste(location, ": $", round(yearly_compensation), sep = ""),
+    hoverinfo = "text"
+  ) %>%
+  layout(showlegend = FALSE)
+
+cityCompensation2021_15 <- 
+  cityCompensationYOE %>%
+  filter(YOE == "2-5") %>%
+  filter(year == 2021) %>%
+  arrange(yearly_compensation) %>%
+  head(n = 5) %>%
+  plot_ly(
+    x = ~yearly_compensation,
+    y = ~location,
+    type = "bar",
+    text = ~paste(location, ": $", round(yearly_compensation), sep = ""),
+    hoverinfo = "text"
+  ) %>%
+  layout(showlegend = FALSE)
+
+cityCompensation2021_510 <- 
+  cityCompensationYOE %>%
+  filter(YOE == "5-10") %>%
+  filter(year == 2021) %>%
+  arrange(yearly_compensation) %>%
+  head(n = 5) %>%
+  plot_ly(
+    x = ~yearly_compensation,
+    y = ~location,
+    type = "bar",
+    text = ~paste(location, ": $", round(yearly_compensation), sep = ""),
+    hoverinfo = "text"
+  ) %>%
+  layout(showlegend = FALSE)
+
+cityCompensation2021_10_ <- 
+  cityCompensationYOE %>%
+  filter(YOE == "10+") %>%
+  filter(year == 2021) %>%
+  arrange(yearly_compensation) %>%
   head(n = 5) %>%
   plot_ly(
     x = ~yearly_compensation,
