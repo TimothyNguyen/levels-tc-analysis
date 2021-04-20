@@ -564,12 +564,6 @@ subplot(companyCompensation2017, companyCompensation2018, companyCompensation201
 
 ## What roles pay the most in tech (total compensation)?
 
-```{r}
-con <- factor(unique(levels_df[c("title")])$title)
-con2 <- factor(unique(levels_df[c("state")])$state)
-print(levels(con2))
-```
-
 ```{r, warning=FALSE, echo=FALSE}
 con <- factor(unique(levels_df[c("title")])$title)
 con2 <- factor(unique(levels_df[c("state")])$state)
