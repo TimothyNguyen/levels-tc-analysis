@@ -48,7 +48,7 @@ levels_df <- levels_df %>%
 
 ## What's the general total compensation package based on YOE and location?
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, out.width="100%"}
 
 ui <-
   fluidPage(
@@ -106,10 +106,10 @@ server <- function(input, output) {
                     color = ~state,
                     size = ~tc*1000^10,
                    text = ~paste0(location, "<br>",
-                   "<b>Mean Yearly Compensation:</b> $", tc, "<br>",
-                   "<b>Mean Salary Base:</b> $", basesalary, "<br>",
-                   "<b>Mean stocks grants:</b> $", stockgrantvalue, "<br>",
-                   "<b>Mean bonus:</b> $", bonus, "<br>")) %>%
+                   "<b>Mean Yearly Compensation:</b> $", round(tc, 2), "<br>",
+                   "<b>Mean Salary Base:</b> $", round(basesalary, 2), "<br>",
+                   "<b>Mean stocks grants:</b> $", round(stockgrantvalue, 2), "<br>",
+                   "<b>Mean bonus:</b> $", round(bonus, 2), "<br>")) %>%
         layout(
           mapbox = list(
             style = 'open-street-map',
@@ -145,6 +145,7 @@ cityCompensationYOE <-
   group_by(year, YOE, location) %>%
   summarise(yearly_compensation = mean(totalyearlycompensation))
 ```
+
 ## Which locations have higher compensation in America based of YOE in 2018?
 
 ```{r, warning=FALSE, echo=FALSE}
@@ -349,7 +350,7 @@ subplot(cityCompensation2018_01, cityCompensation2018_15, cityCompensation2018_5
 cityCompensation2021_01 <- 
   cityCompensationYOE %>%
   filter(YOE == "0-2") %>%
-  filter(year == 2021) %>%
+  filter(year == 2020) %>%
   arrange(yearly_compensation) %>%
   head(n = 5) %>%
   plot_ly(
@@ -364,7 +365,7 @@ cityCompensation2021_01 <-
 cityCompensation2021_15 <- 
   cityCompensationYOE %>%
   filter(YOE == "2-5") %>%
-  filter(year == 2021) %>%
+  filter(year == 2020) %>%
   arrange(yearly_compensation) %>%
   head(n = 5) %>%
   plot_ly(
@@ -379,7 +380,7 @@ cityCompensation2021_15 <-
 cityCompensation2021_510 <- 
   cityCompensationYOE %>%
   filter(YOE == "5-10") %>%
-  filter(year == 2021) %>%
+  filter(year == 2020) %>%
   arrange(yearly_compensation) %>%
   head(n = 5) %>%
   plot_ly(
@@ -394,7 +395,7 @@ cityCompensation2021_510 <-
 cityCompensation2021_10_ <- 
   cityCompensationYOE %>%
   filter(YOE == "10+") %>%
-  filter(year == 2021) %>%
+  filter(year == 2020) %>%
   arrange(yearly_compensation) %>%
   head(n = 5) %>%
   plot_ly(
@@ -409,7 +410,7 @@ cityCompensation2021_10_ <-
 subplot(cityCompensation2021_01, cityCompensation2021_15, cityCompensation2021_510, cityCompensation2021_10_, nrows = 4)
 ```
 
-## Which companies have the highest compensation? 
+## Which companies have the highest compensation?
 
 ```{r, warning=FALSE, echo=FALSE}
 companyCompensation2017 <- 
@@ -586,10 +587,10 @@ ui <-
          pickerInput(
             "statePicker",
             "Select/deselect all + format selected",
-            choices = unique(con2),
+            choices = unique(levels(con2)),
             options = list('action-box' = TRUE),
             multiple=TRUE,
-            selected="CA"
+            selected="WA"
         ),
       ),
      
@@ -600,7 +601,6 @@ ui <-
       )
     ))
 server <- function(input, output) {
-
   output$tc <-
     renderPlot({
       
@@ -611,34 +611,30 @@ server <- function(input, output) {
       location_df <- prep %>% 
         distinct(state, .keep_all = TRUE) %>%
         select(state, zip, lat, long) %>% na.omit()
-
       tc <- prep
       if(length(input$statePicker) != 0) {
         tc <- tc %>%  
           filter(state %in% input$statePicker) 
       } 
-
       tc <- aggregate(list(tc = tc$totalyearlycompensation,
                            basesalary = tc$basesalary,
                            stockgrantvalue = tc$stockgrantvalue,
                            bonus = tc$bonus), 
                           by=list(title=tc$title), 
                           FUN=mean, na.action = na.omit)
-
       tc %>%
         mutate(title = fct_reorder(title, tc))%>%
         ggplot(aes(x = title, y = tc, fill = title)) + 
-        geom_text(aes(y = tc, label = tc, hjust=0), size = 3) +
+        geom_text(aes(y = tc, label = paste0("$", round(tc, 2)), hjust=0), size = 3) +
         geom_bar(stat = "identity")+
         coord_flip()+
-        labs(x = "", y = "")+
-        ggtitle(paste("Hello"))+
+        labs(x = "Roles", y = "Compensation (US Dollars)")+
+        ggtitle(paste("Factoring YOE + Location: Pay for roles"))+
         theme(legend.title = element_blank(), legend.position = "none")
         
     })  
       
 }
-
 shinyApp(ui, server)
 ```
 
@@ -652,7 +648,7 @@ shinyApp(ui, server)
 
     -   Senior Level (5 - 10 Years): Highland Park, NJ; Meno Park, CA; Flint, MI
 
-    -   Above (10+ Years): Chapel Hill, NC; Los Gatos, CA 
+    -   Above (10+ Years): Chapel Hill, NC; Los Gatos, CA
 
 ## Conclusion
 
@@ -662,7 +658,7 @@ shinyApp(ui, server)
 
     -   Mid-Level (2 - 5 years): Ireland, IN; Huntsville, AL
 
-    -   Senior Level (5 - 10 Years): El Segunto, CA; Lindon, UT 
+    -   Senior Level (5 - 10 Years): El Segunto, CA; Lindon, UT
 
     -   Above (10+ Years): Crapo, MD; Kansas City, MO; Columbus, GA
 
